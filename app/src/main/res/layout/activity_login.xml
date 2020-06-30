@@ -8,14 +8,14 @@
               android:paddingRight="@dimen/activity_horizontal_margin"
               android:paddingTop="@dimen/activity_vertical_margin"
               android:background="@drawable/background_welcome_min"
-              tools:context="com.londonappbrewery.flashchatnewfirebase.LoginActivity"
+              tools:context="com.chibuzoakpe.flashchatnewfirebase.LoginActivity"
               android:gravity="bottom">
 
 
 
 
 
-    <android.support.design.widget.TextInputLayout
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColorHint="@color/white"
@@ -33,9 +33,9 @@
             android:maxLines="1"
             android:textIsSelectable="false"/>
 
-    </android.support.design.widget.TextInputLayout>
+    </com.google.android.material.textfield.TextInputLayout>
 
-    <android.support.design.widget.TextInputLayout
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColorHint="@color/white"
@@ -55,7 +55,8 @@
             android:maxLines="1"
             />
 
-    </android.support.design.widget.TextInputLayout>
+    </com.google.android.material.textfield.TextInputLayout>
+
 
     <Button
         android:id="@+id/login_sign_in_button"

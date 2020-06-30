@@ -1,10 +1,13 @@
 apply plugin: 'com.android.application'
 
+//added this line
+apply plugin: 'com.google.gms.google-services'
+
 android {
-    compileSdkVersion 26
+    compileSdkVersion 28
 
     defaultConfig {
-        applicationId "com.londonappbrewery.flashchatnewfirebase"
+        applicationId "com.chibuzoakpe.flashchatnewfirebase"
         minSdkVersion 16
         targetSdkVersion 26
         versionCode 1
@@ -20,8 +23,12 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:appcompat-v7:26.1.0'
-    implementation 'com.android.support:design:26.1.0'
+    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'com.google.firebase:firebase-analytics:17.4.3'
+    implementation 'com.google.firebase:firebase-core:17.4.3'
+    implementation 'com.google.firebase:firebase-database:19.3.1' //added manually for database
+    implementation 'com.google.firebase:firebase-auth:19.3.1'     //added manually for authentication
 
 
 }
