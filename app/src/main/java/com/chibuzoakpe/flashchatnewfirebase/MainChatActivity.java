@@ -1,8 +1,11 @@
 package com.chibuzoakpe.flashchatnewfirebase;
 
+/*
+The adapter is set up in the onStart method (part of the lifecycle) not onCreate.
+ */
+
 import android.content.SharedPreferences;
 import android.os.Bundle;
-//import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -28,6 +31,8 @@ public class MainChatActivity extends AppCompatActivity {
 
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference mDatabaseReference = database.getReference();
+
+    private ChatListAdapter mChatListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +93,17 @@ public class MainChatActivity extends AppCompatActivity {
     }
 
     // TODO: Override the onStart() lifecycle method. Setup the adapter here.
+    /*
+    Remember that onStart() gets called after onCreate()
+     */
+    @Override
+    public void onStart() {
+        super.onStart();
+        mChatListAdapter = new ChatListAdapter(this, mDatabaseReference, mDisplayName);
+
+        //then hook adapter up to ListView
+        mChatListView.setAdapter(mChatListAdapter);
+    }
 
 
     @Override
@@ -95,6 +111,7 @@ public class MainChatActivity extends AppCompatActivity {
         super.onStop();
 
         // TODO: Remove the Firebase event listener on the adapter.
+        mChatListAdapter.cleanUp();
 
     }
 

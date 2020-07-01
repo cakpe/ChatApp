@@ -4,7 +4,9 @@ package com.chibuzoakpe.flashchatnewfirebase;
 You need to create this class if you're going to work with
 custom adapters instead if the ArrayAdapter
 The class must extend BaseAdapter and the methods with "override"
-needed to be implemented because BaseAdapter is an abstract class
+needed to be implemented because BaseAdapter is an abstract class.
+
+This adapter class also does the listening for data changes from firebase (reading data) essentially
  */
 
 import android.app.Activity;
@@ -16,7 +18,12 @@ import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 
 import java.util.ArrayList;
@@ -31,14 +38,62 @@ public class ChatListAdapter extends BaseAdapter {
     private ArrayList<DataSnapshot> mSnapshotList;
 
     /*
+    The childEventListener tracks when there's a change in the data in firebase and reports
+    back to the application.
+    All the methods were auto-generated for us when we made an object of the
+    ChildEventListener class.
+    But the only method we really care about is the onChildAdded(). This is due to the nature
+    of the functionality of the app. If you could delete and edit messages, then the other
+    methods would be valuable.
+     */
+    private ChildEventListener mChildEventListener = new ChildEventListener() {
+        @Override
+        public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+            /*
+            remember that a datasnapshot is what firebase returns to you. So we add the
+            snapshot to our list
+             */
+            mSnapshotList.add(snapshot);
+
+            //we then have to notify the list view adapter that data has been added
+            notifyDataSetChanged();
+        }
+
+
+        @Override
+        public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+        }
+
+        @Override
+        public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+
+        }
+
+        @Override
+        public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError error) {
+
+        }
+    };
+
+
+    /*
     The adapter constructor basically initializes everything that would be
     needed by each item in the list view. It also takes the activity that
     would be using it as a parameter
      */
-    public void ChatListAdapter(Activity activity, DatabaseReference ref, String name) {
+    public ChatListAdapter(Activity activity, DatabaseReference ref, String name) {
         this.mActivity = activity;
         this.mDisplayName = name;
         this.mDatabaseReference = ref.child("messages");
+
+        //We need to attach our listener to the database reference
+        this.mDatabaseReference.addChildEventListener(mChildEventListener);
 
         mSnapshotList = new ArrayList<>();
     }
@@ -46,6 +101,8 @@ public class ChatListAdapter extends BaseAdapter {
     /*
     We then create a helper class to help us model the view that each individual
     row in the list view would be holding.
+    This is not necessary syntax and the "traditional" way of doing it is in the link in your
+    notes
      */
     static class ViewHolder {
         TextView authorname;
@@ -59,16 +116,21 @@ public class ChatListAdapter extends BaseAdapter {
      */
     @Override
     public int getCount() {
-        return 0;
+        return mSnapshotList.size();
     }
 
     /*
     We changed the return value of this method to InstantMessage because it is objects of the
     InstantMessage class that we are working with. The original signature was "Object"
+
+    This method is a two-phase process. We get the datasnapshot at the relevant position
+    Then we convert the datasnapshot to the desired object type we want to return (InstantMessage)
      */
     @Override
     public InstantMessage getItem(int position) {
-        return null;
+        DataSnapshot snapshot = mSnapshotList.get(position);
+
+        return snapshot.getValue(InstantMessage.class);
     }
 
     @Override
@@ -88,7 +150,7 @@ public class ChatListAdapter extends BaseAdapter {
         convertView represents the view of a list item
         what we are simply doing is checking if there is an existing row on the screen
         that can be re-used (when you scroll past it on the screen)
-        If there is no existing vew, we create a new view from scratch from the layout file
+        If there is no existing view, we create a new view from scratch from the layout file
          */
         if(convertView == null) {
             LayoutInflater inflater = (LayoutInflater)mActivity
@@ -123,5 +185,13 @@ public class ChatListAdapter extends BaseAdapter {
 
 
         return convertView;
+    }
+
+    /*
+    This method detaches the childEventListener from the database reference when it's no longer
+    needed. Helps to free resources.
+     */
+    public void cleanUp() {
+        this.mDatabaseReference.removeEventListener(this.mChildEventListener);
     }
 }
