@@ -11,6 +11,8 @@ This adapter class also does the listening for data changes from firebase (readi
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,7 +36,7 @@ public class ChatListAdapter extends BaseAdapter {
     private DatabaseReference mDatabaseReference;
     private String mDisplayName;
 
-    //A datasnapshot is the data type of data objects sent back from firebase
+    //A data snapshot is the data type of data objects sent back from firebase
     private ArrayList<DataSnapshot> mSnapshotList;
 
     /*
@@ -50,7 +52,7 @@ public class ChatListAdapter extends BaseAdapter {
         @Override
         public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
             /*
-            remember that a datasnapshot is what firebase returns to you. So we add the
+            remember that a data snapshot is what firebase returns to you. So we add the
             snapshot to our list
              */
             mSnapshotList.add(snapshot);
@@ -123,8 +125,8 @@ public class ChatListAdapter extends BaseAdapter {
     We changed the return value of this method to InstantMessage because it is objects of the
     InstantMessage class that we are working with. The original signature was "Object"
 
-    This method is a two-phase process. We get the datasnapshot at the relevant position
-    Then we convert the datasnapshot to the desired object type we want to return (InstantMessage)
+    This method is a two-phase process. We get the data snapshot at the relevant position
+    Then we convert the data snapshot to the desired object type we want to return (InstantMessage)
      */
     @Override
     public InstantMessage getItem(int position) {
@@ -153,6 +155,7 @@ public class ChatListAdapter extends BaseAdapter {
         If there is no existing view, we create a new view from scratch from the layout file
          */
         if(convertView == null) {
+            //You inflate() when you want to progammatically add a view to an activity or fragment
             LayoutInflater inflater = (LayoutInflater)mActivity
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.chat_msg_row, parent, false);
@@ -164,11 +167,15 @@ public class ChatListAdapter extends BaseAdapter {
             holder.authorname = (TextView) convertView.findViewById(R.id.author);
             holder.body = (TextView) convertView.findViewById(R.id.message);
 
-            //I do not understand this line and the entire point of linearlayoutparams in this file in the project
-            holder.params = (LinearLayout.LayoutParams) holder.authorname.getLayoutParams();
+            /*
+            As I suspected, you could call getLayoutParams() on holder.body or holder.authorname
+            You just need to get the original layout params you styled in chat_msg_row
+            And you can get the layout params from any id in the chat_msg_row layout file
+             */
+            holder.params = (LinearLayout.LayoutParams) holder.body.getLayoutParams();
 
             /*
-            Now let the adapter store the viewholder for a short period of time so that it
+            Now let the adapter store the view holder for a short period of time so that it
             can be re-used
              */
             convertView.setTag(holder);
@@ -178,13 +185,44 @@ public class ChatListAdapter extends BaseAdapter {
         ViewHolder holder = (ViewHolder) convertView.getTag();
 
         String author = message.getAuthor();
+         /*
+        compare the author of the message to the logged in user
+        so we can set the appearance of the text bubble
+         */
+        boolean isMe = author.equals(mDisplayName);
+        setRowAppearance(isMe, holder);
+
         holder.authorname.setText(author);
 
         String msg = message.getMessage();
         holder.body.setText(msg);
 
-
         return convertView;
+    }
+
+    /*
+    This method sets a visual difference between an individual's message bubble and another person's
+     */
+    public void setRowAppearance(boolean isMe, ViewHolder viewHolder) {
+        if(isMe) {
+            viewHolder.params.gravity = Gravity.END;
+            viewHolder.authorname.setTextColor(Color.GREEN);
+            viewHolder.body.setBackgroundResource(R.drawable.bubble2);
+        }
+        else {
+            viewHolder.params.gravity = Gravity.START;
+            viewHolder.authorname.setTextColor(Color.BLUE);
+            viewHolder.body.setBackgroundResource(R.drawable.bubble1);
+        }
+
+        /*
+        Try commenting either of these lines out to understand its effect
+        But my understanding so far is you set the params characteristics before you then apply to
+        params to each feature of the new inflated view that needs it
+         */
+        viewHolder.authorname.setLayoutParams(viewHolder.params);
+        viewHolder.body.setLayoutParams(viewHolder.params);
+
     }
 
     /*
